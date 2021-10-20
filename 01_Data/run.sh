@@ -1,0 +1,2 @@
+python3 imvely_crawling.py
+python3 create_table_and_insert_data.py
