@@ -1,0 +1,1 @@
+python3 fashion-reader/manage.py runserver 0.0.0.0:8000
