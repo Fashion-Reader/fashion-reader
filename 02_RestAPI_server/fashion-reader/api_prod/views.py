@@ -137,7 +137,10 @@ def load_vqa_answer(item_id, columns):
     db, column = name2column[columns]
     SQL = f"SELECT {column} from {db} where item_id = \"{item_id}\""
     cursor.execute(SQL)
-    return cursor.fetchall()[0][0]
+    try:
+        return cursor.fetchall()[0][0]
+    except:
+        return "잘 모르겠어요"
 
 
 class ProdView(APIView):
