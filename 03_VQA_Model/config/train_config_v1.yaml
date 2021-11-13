@@ -1,0 +1,17 @@
+SEED:
+  random_seed: 2021
+
+MODEL:
+  model_str: FR_model
+
+TRAIN:
+  num_epochs: 10
+  batch_size: 8
+  learning_rate: 0.00005
+  early_stopping_patience: 5
+  optimizer: AdamP
+  scheduler: CosineAnnealingWarmRestarts
+  T_0: 10
+  T_mult: 1
+  min_lr: 1e-7
+  metric_function: accuracy
