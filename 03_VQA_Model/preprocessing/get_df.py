@@ -4,16 +4,22 @@ import json
 import glob
 import pandas as pd
 
+
 from tqdm.auto import tqdm
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 
 from kfashion_image_rename import save_img_path
 
 
+label_dir_path = '../data/라벨링데이터'
+df_path = '../data_table.csv'
+
+
 def load_json(file_name):
     with open(file_name) as json_file:
         json_data = json.load(json_file)
     return json_data
+
 
 def load_dataset_info(label_dir_path):
     label_paths = glob.glob(os.path.join(label_dir_path,'*','*'))
@@ -52,6 +58,7 @@ def load_dataset_info(label_dir_path):
     df = pd.DataFrame(lst)
     return df
 
+
 def preprocessing(df, save_img_path):
     _df = df[['file_dir', 'file_name', '대분류', '카테고리', '색상', '스타일', '넥라인', '프린트', '디테일']]
     _df.columns = ['file_dir', 'file_name', '대분류', '카테고리', '색상', '스타일', '넥라인', '무늬', '디테일']
@@ -78,6 +85,7 @@ def preprocessing(df, save_img_path):
     _df['image_path'] = save_img_path + _df['file_dir'] + '/' + _df['file_name'].apply(lambda x:x.lower())
     _df = _df.fillna('없음')
     return _df
+
 
 def label_encoding(_df):
     groups = ['상의','아우터','원피스','하의']
@@ -128,6 +136,7 @@ def label_encoding(_df):
         _df[column+'_ID'] = labels
     return _df
 
+
 def add_language_input(_df):
     ko2en = {'대분류':'group',
             '상의':'top',
@@ -152,8 +161,10 @@ def add_language_input(_df):
     _df['language_input'] = _df['대분류'].apply(lambda x:'group '+ko2en[x]+' '+tmp)
     return _df
 
+
 def save_df(df, df_path):
     df.to_csv(df_path, index=False)
+
 
 def main(label_dir_path, df_path):
     df = load_dataset_info(label_dir_path)
@@ -164,6 +175,4 @@ def main(label_dir_path, df_path):
 
 
 if __name__ == "__main__":
-    label_dir_path = '../data/라벨링데이터'
-    df_path = '../data_table.csv'
     main(label_dir_path, df_path)

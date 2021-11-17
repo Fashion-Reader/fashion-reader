@@ -1,5 +1,6 @@
 """
 """
+
 from tqdm.auto import tqdm
 from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
@@ -122,4 +123,3 @@ def valid_one_epoch_accuracy(CFG, epoch, model, val_loader):
             sub_category_accuracy = {accuracy_dict['sub_category_accuracy']:.4f}
             sub_color_accuracy = {accuracy_dict['sub_color_accuracy']:.4f}""")
     return accuracy_dict
-

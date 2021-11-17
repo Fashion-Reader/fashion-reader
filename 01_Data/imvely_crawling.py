@@ -3,16 +3,20 @@ import os
 import time
 import json
 import logging
-import datetime
-from pymongo import MongoClient
 import requests
+import datetime
+
+
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from tqdm import tqdm
+from pymongo import MongoClient
+
 
 # Edit DB Server
 client = MongoClient("mongodb+srv://sun:0000@crawling-data.r9oex.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client["crawling-data"]["imvely"]
+
 
 def download(url, params={}, method='GET', headers={'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36'}):
     '''
@@ -30,6 +34,7 @@ def download(url, params={}, method='GET', headers={'user-agent': 'Mozilla/5.0 (
                             headers=headers)
 
     return resp
+
 
 class ImvelyCrawling():
     def __init__(self, save_dir):
@@ -334,8 +339,8 @@ class ImvelyCrawling():
             self.logger.info(f"Save {save_name}")
             print(f"\tSave {save_name}")
 
-def main(save_dir):
 
+def main(save_dir):
     imvely = ImvelyCrawling(save_dir)
     url = imvely.get_main_url()
     imvely.entered_link(url, 3)
@@ -356,6 +361,7 @@ def main(save_dir):
 
     imvely.logger.info('Success Scrapping !!')
     print('Success Scrapping !!')
+
 
 if __name__ == "__main__":
     save_dir = './'

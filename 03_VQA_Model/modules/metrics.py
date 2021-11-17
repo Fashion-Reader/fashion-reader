@@ -2,8 +2,10 @@
 import torch
 import numpy as np
 
+
 from torch.nn import functional as F
 from sklearn.metrics import accuracy_score
+
 
 def get_accuracy_all(CFG, outputs, labels):
     labels = labels.T.detach().cpu().numpy()
