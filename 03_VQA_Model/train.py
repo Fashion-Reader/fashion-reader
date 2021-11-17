@@ -4,6 +4,7 @@ import copy
 import torch
 import pandas as pd
 
+
 from adamp import AdamP
 from torch.cuda.amp import GradScaler
 from transformers import BertTokenizer
@@ -47,6 +48,7 @@ class CFG:
 
     # PERFORMANCE RECORD
     save_path = os.path.join(PROJECT_DIR, 'results', TRAIN_SERIAL)
+
 
 if __name__ == '__main__':
     # Set random seed

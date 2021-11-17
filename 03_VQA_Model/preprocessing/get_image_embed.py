@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 from tqdm.auto import tqdm
 from detectron2 import model_zoo
 from detectron2.layers import nms
@@ -26,6 +27,7 @@ from detectron2.modeling.roi_heads.fast_rcnn import FastRCNNOutputLayers
 
 from get_df import df_path
 
+
 def load_config_and_model_weights(cfg_path):
     cfg = get_cfg()
     cfg.merge_from_file(model_zoo.get_config_file(cfg_path))
@@ -39,6 +41,7 @@ def load_config_and_model_weights(cfg_path):
     cfg.MODEL.WEIGHTS = model_zoo.get_checkpoint_url(cfg_path)
     return cfg
 
+
 def get_model(cfg):
     # build model
     model = build_model(cfg)
@@ -50,6 +53,7 @@ def get_model(cfg):
     # eval mode
     model.eval()
     return model
+
 
 def prepare_image_inputs(cfg, img_list, model, device):
     # Resizing the image according to the configuration
@@ -74,13 +78,16 @@ def prepare_image_inputs(cfg, img_list, model, device):
     images =  ImageList.from_tensors(images, model.backbone.size_divisibility)
     return images, batched_inputs
 
+
 def get_features(model, images):
     features = model.backbone(images.tensor)
     return features
 
+
 def get_proposals(model, images, features):
     proposals, _ = model.proposal_generator(images, features)
     return proposals
+
 
 def get_box_features(model, features, proposals):
     features_list = [features[f] for f in ['p2', 'p3', 'p4', 'p5']]
@@ -96,11 +103,13 @@ def get_box_features(model, features, proposals):
         box_features = box_features.unsqueeze(0)
     return box_features, features_list
 
+
 def get_prediction_logits(model, features_list, proposals):
     cls_features = model.roi_heads.box_pooler(features_list, [x.proposal_boxes for x in proposals])
     cls_features = model.roi_heads.box_head(cls_features)
     pred_class_logits, pred_proposal_deltas = model.roi_heads.box_predictor(cls_features)
     return pred_class_logits, pred_proposal_deltas
+
 
 def get_box_scores(cfg, proposals, pred_class_logits, pred_proposal_deltas):
     input_shape = pred_proposal_deltas.size()[-1]
@@ -119,6 +128,7 @@ def get_box_scores(cfg, proposals, pred_class_logits, pred_proposal_deltas):
     scores = outputs.predict_probs((pred_class_logits, pred_proposal_deltas), proposals)
     return boxes, scores
 
+
 def get_output_boxes(boxes, batched_inputs, image_size):
     proposal_boxes = boxes.reshape(-1, 4).clone()
     scale_x, scale_y = (batched_inputs["width"] / image_size[1], batched_inputs["height"] / image_size[0])
@@ -127,6 +137,7 @@ def get_output_boxes(boxes, batched_inputs, image_size):
     output_boxes.scale(scale_x, scale_y)
     output_boxes.clip(image_size)
     return output_boxes
+
 
 def select_boxes(cfg, output_boxes, scores):
     test_score_thresh = cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST
@@ -147,12 +158,14 @@ def select_boxes(cfg, output_boxes, scores):
     keep_boxes = torch.where(max_conf >= test_score_thresh)[0]
     return keep_boxes, max_conf
 
+
 def filter_boxes(keep_boxes, max_conf, min_boxes=10, max_boxes=100):
     if len(keep_boxes) < min_boxes:
         keep_boxes = np.argsort(max_conf).numpy()[::-1][:min_boxes]
     elif len(keep_boxes) > max_boxes:
         keep_boxes = np.argsort(max_conf).numpy()[::-1][:max_boxes]
     return keep_boxes
+
 
 def get_visual_embeds(cfg, model, image, device):
     images, batched_inputs = prepare_image_inputs(cfg, [image], model, device)
@@ -173,11 +186,13 @@ def get_visual_embeds(cfg, model, image, device):
     visual_embeds = [box_feature[keep_box.copy()] for box_feature, keep_box in zip(box_features, keep_boxes)]
     return torch.stack(visual_embeds)
 
+
 def img2embeds(cfg, model, path, device):
     img = plt.imread(path)
     img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     visual_embeds = get_visual_embeds(cfg, model, img_bgr, device)
     return visual_embeds
+
 
 def main(df_path):
     cfg_path = "COCO-InstanceSegmentation/mask_rcnn_R_101_FPN_3x.yaml"
