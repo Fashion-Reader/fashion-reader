@@ -128,3 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 .DS_Store
+04_QA_model/QA_model.pt
+
+#gcp sdk
+fashionreader-8afdd8e85306.json
