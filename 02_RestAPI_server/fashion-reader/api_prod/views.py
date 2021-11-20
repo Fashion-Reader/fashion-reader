@@ -41,36 +41,28 @@ names = {0: '이름',
          11: '안감',
          12: '스타일',
          13: '프린팅',
-         14: '상의 색',
-         15: '하의 색',
-         16: '상의 카테고리',
-         17: '하의 카테고리',
-         18: '넥 라인'}
+         14: '넥 라인'}
 
 name2column = {
-    "이름": ("products", "name"),
-    "가격": ("products", "price"),
-    "사이즈 옵션": ("products", "size_options"),
+    "이름": ("product", "name"),
+    "가격": ("product", "price"),
+    "사이즈 옵션": ("product", "size_options"),
     # "소재": (""),
-    "비침": ("products", "see_through"),
-    "카테고리": ("products", "item_type"),
-    "색 옵션": ("products", "color_options"),
-    "두께감": ("products", "thickness"),
-    "신축성": ("products", "flexibility"),
-    "촉감": ("products", "touch"),
-    "핏": ("products", "fit"),
-    "안감": ("products", "lining"),
+    "비침": ("product", "see_through"),
+    "카테고리": ("product", "item_type"),
+    "색 옵션": ("product", "color_options"),
+    "두께감": ("product", "thickness"),
+    "신축성": ("product", "flexibility"),
+    "촉감": ("product", "touch"),
+    "핏": ("product", "fit"),
+    "안감": ("product", "lining"),
     "스타일": ("vqa_table", "style"),
     "프린팅": ("vqa_table", "printing"),
-    "상의 색": ("vqa_table", "top_color"),
-    "하의 색": ("vqa_table", "bottom_color"),
-    "상의 카테고리": ("vqa_table", "top_category"),
-    "하의 카테고리": ("vqa_table", "bottom_category"),
     "넥 라인": ("vqa_table", "neckline"),
 }
 
 # Load model
-network = torch.load("/home/ec2-user/fashion_reader/03_Model/QA_model.pt", map_location=torch.device('cpu'))
+network = torch.load("/home/ec2-user/fashion_reader/04_QA_model/QA_model.pt", map_location=torch.device('cpu'))
 pretrained_model_state = deepcopy(network.state_dict())
 network.load_state_dict(pretrained_model_state)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -113,6 +105,7 @@ class NLP_Dataset_test(Dataset):
     def __len__(self):
         return len(self.labels)
 
+
 def question_model(query):
     input_str = query
     test_df = pd.DataFrame(zip([input_str],[-1]), columns=['question', 'label'])
@@ -132,13 +125,64 @@ def question_model(query):
 
     return names[preds_all[0]]
 
+
+def answer(column, value):
+    print(column, value)
+    if column in {"이름", "가격", "사이즈 옵션", "카테고리", "색 옵션", "스타일", "프린팅", "넥 라인"}:
+        return f"해당 상품의 {column}은 {value} 입니다."
+    elif column == "비침":
+        if value == "있음":
+            return "해당 상품은 비치는 편입니다."
+        elif value == "약간있음":
+            return "해당 상품은 약간 비치는 편입니다."
+        elif value == "없음":
+            return "해당 상품은 비치지 않는 편입니다."
+        else:
+            return "밝은 컬러는 비치는 편입니다."
+    elif column == "두께감":
+        if value == "두꺼움":
+            return "해당 상품은 두꺼운 편입니다."
+        elif value == "보통":
+            return "해당 상품의 두께는 보통인 편입니다."
+        else:
+            return "해당 상품은 얇은 편입니다."
+    elif column == "신축성":
+        if value == "좋음":
+            return "해당 상품의 신축성은 좋은 편입니다."
+        elif value == "약간 있음":
+            return "해당 상품의 신축성은 약간 있는 편입니다."
+        else:
+            return "해당 상품의 신축성은 없는 편입니다."
+    elif column == "촉감":
+        if value == "부드러움":
+            return "해당 상품의 촉감은 부드러운 편입니다."
+        elif value == "보통":
+            return "해당 상품의 촉감은 부드러움과 거침의 중간 정도입니다."
+        else:
+            return "해당 상품의 촉감은 거친 편입니다."
+    elif column == "핏":
+        if value == "루즈핏":
+            return "해당 상품은 루즈핏입니다."
+        elif value == "기본핏":
+            return "해당 상품은 기본핏입니다."
+        else:
+            return "해당 상품은 타이트한 핏입니다."
+    elif column == "안감":
+        if {"전체", "부분", "없음"} in value:
+            return "해당 상품의 안감은 평범합니다."
+        elif value == "기모":
+            return "해당 상품의 안감은 기모입니다."
+        else:
+            return "해당 상품의 안감은 퍼입니다."
+    
+
 def load_vqa_answer(item_id, columns):
     # CHECK TABLE
     db, column = name2column[columns]
     SQL = f"SELECT {column} from {db} where item_id = \"{item_id}\""
     cursor.execute(SQL)
     try:
-        return cursor.fetchall()[0][0]
+        return answer(columns, cursor.fetchall()[0][0])
     except:
         return "잘 모르겠어요"
 
@@ -165,4 +209,5 @@ def query_to_response(request, **kwargs):
     column = question_model(query)
     res = load_vqa_answer(item_id, column)
     print(res)
-    return JsonResponse({'query':query, 'response':column + " : " + res}, json_dumps_params = {'ensure_ascii': True})
+    return JsonResponse({'query': query, 'response': res}, json_dumps_params = {'ensure_ascii': True})
+    
