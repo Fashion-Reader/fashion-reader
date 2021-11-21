@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.http import HttpResponse, JsonResponse
 from .serializers import ProductsSerializer
 from rest_framework import status
-from .models import Products
+from .models import Product
 import urllib.parse
 from .classifier import QueryModule
 import torch
@@ -191,14 +191,14 @@ class ProdView(APIView):
     def get(self, request, **kwargs):
         if kwargs.get('item_id'):
             query_id = kwargs.get('item_id')
-            user_serializer = ProductsSerializer(Products.objects.get(item_id=query_id))
+            user_serializer = ProductsSerializer(Product.objects.get(item_id=query_id))
             return Response(user_serializer.data, status=status.HTTP_200_OK)
         elif kwargs.get('item_type_id'):
             query_id = kwargs.get('item_type_id')
-            user_serializer = ProductsSerializer(Products.objects.filter(item_type_id=query_id), many=True)
+            user_serializer = ProductsSerializer(Product.objects.filter(item_type_id=query_id), many=True)
             return Response(user_serializer.data, status=status.HTTP_200_OK)
         else:
-            user_queryset = Products.objects.all()
+            user_queryset = Product.objects.all()
             user_queryset_serializer = ProductsSerializer(user_queryset, many=True)
             return Response(user_queryset_serializer.data, status=status.HTTP_200_OK)
 

@@ -134,7 +134,7 @@ class DjangoSession(models.Model):
         db_table = 'django_session'
 
 
-class Products(models.Model):
+class Product(models.Model):
     item_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100, blank=True, null=True)
     url = models.CharField(max_length=200, blank=True, null=True)
@@ -153,4 +153,19 @@ class Products(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'products'
+        db_table = 'product'
+
+
+class VqaTable(models.Model):
+    item_id = models.IntegerField(primary_key=True)
+    style = models.CharField(max_length=30, blank=True, null=True)
+    printing = models.CharField(max_length=30, blank=True, null=True)
+    neckline = models.CharField(max_length=30, blank=True, null=True)
+    top_color = models.CharField(max_length=30, blank=True, null=True)
+    bottom_color = models.CharField(max_length=30, blank=True, null=True)
+    top_category = models.CharField(max_length=30, blank=True, null=True)
+    bottom_category = models.CharField(max_length=30, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'vqa_table'

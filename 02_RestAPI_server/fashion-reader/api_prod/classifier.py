@@ -8,7 +8,7 @@
 import random
 import torch
 from .serializers import ProductsSerializer
-from .models import Products
+from .models import Product
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 class QueryModule():
