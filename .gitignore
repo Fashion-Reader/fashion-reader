@@ -132,3 +132,9 @@ dmypy.json
 
 #gcp sdk
 fashionreader-8afdd8e85306.json
+
+# AWS address
+05_App/src/others/aws_info.js
+
+# app packages
+05_App/node_modules
