@@ -146,7 +146,7 @@ class CustomTrainer():
             self.logger.info(msg) if self.logger else print(msg)
 
         # VQA를 train
-        elif self.train_type == 'VQA':
+        elif self.train_type == 'vqa':
             self.model.train()
             for batch_index, data in enumerate(dataloader):
                 q_bert_ids = data['ids'].to(self.device)
@@ -278,7 +278,7 @@ class CustomTrainer():
                 msg = f'Epoch {epoch_index}, Validation, Mean loss: {self.validation_loss_mean}, Score: {self.validation_score}'
                 self.logger.info(msg) if self.logger else print(msg)
 
-        elif self.train_type == 'VQA':
+        elif self.train_type == 'vqa':
             self.model.eval()
 
             with torch.no_grad():

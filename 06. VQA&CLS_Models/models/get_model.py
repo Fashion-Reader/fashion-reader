@@ -10,14 +10,13 @@ from models.efficient_cls import CropedClassificationModel
 from mmdet.apis import init_detector
 
 
-def get_model(model_str: str) -> 'model':
-
+def get_model(model_str: str, cfg) -> 'model':
     if model_str == 'vqa_model':
-        return VQAModel
+        return VQAModel(cfg['MODEL']['num_targets'])
     elif model_str == 'feature_model':
-        return CropedClassificationModel
+        return CropedClassificationModel()
     elif model_str == 'style_model':
-        return StyleClassificationModel
+        return StyleClassificationModel()
     elif model_str == 'detection':
         config = './configs/swin/mask_rcnn_swin_small_inference.py'
         checkpoint = './work_dirs/swin+cascade_kfashion1/best_bbox_mAP_50.pth'

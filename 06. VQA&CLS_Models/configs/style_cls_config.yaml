@@ -12,7 +12,7 @@ DATALOADER:
   pin_memory: True
 
 MODEL:
-  model_str: feature_model
+  model_str: style_model
 
 TRAIN:
   num_epochs: 10

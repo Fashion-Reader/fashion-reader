@@ -1,0 +1,47 @@
+TRAIN:
+  type: vqa
+
+SEED:
+  random_seed: 42
+
+
+DATALOADER:
+  num_workers: 8
+  pin_memory: True
+
+DATA:
+  max_token: 30
+
+MODEL:
+  model_str: vqa_model
+  num_targets: 86
+
+TRAIN:
+  num_epochs: 7
+  batch_size: 128
+  learning_rate: 0.00002
+  early_stopping_patience: 50
+  optimizer:
+  scheduler:
+  momentum:
+  weight_decay:
+  loss_function: crossentropy
+  metric_function: accuracy
+
+PERFORMANCE_RECORD:
+  column_list:
+    - train_serial
+    - train_timestamp
+    - model_str
+    - metric_function_str
+    - early_stopping_patience
+    - batch_size
+    - epoch
+    - learning_rate
+    - random_seed # -----------key columns-------------
+    - epoch_index
+    - train_loss
+    - validation_loss
+    - train_score
+    - validation_score
+    - elapsed_time

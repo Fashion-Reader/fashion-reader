@@ -4,6 +4,7 @@ from sklearn.metrics import accuracy_score
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import argparse
 from models.get_model import get_model
 from modules.dataset import get_datasets
 from modules.earlystoppers import LossEarlyStopper
@@ -12,46 +13,48 @@ from modules.trainer import CustomTrainer
 from modules.utils import load_yaml, save_yaml, get_logger, make_directory, seed_everything
 import os
 
-# CONFIG
-PROJECT_DIR = "./"
-ROOT_PROJECT_DIR = os.path.dirname(PROJECT_DIR)
-TRAIN_CONFIG_PATH = os.path.join(PROJECT_DIR, 'config/train_config_v1.yaml')
-config = load_yaml(TRAIN_CONFIG_PATH)
-
-# DEBUG
-TRAIN_TYPE = config['TRAIN']['type']
-
-# SEED
-RANDOM_SEED = config['SEED']['random_seed']
-
-
-# MODEL
-MODEL = config['MODEL']['model_str']
-
-# TRAIN
-BATCH_SIZE = config['TRAIN']['batch_size']
-EPOCHS = config['TRAIN']['num_epochs']
-LEARNING_RATE = config['TRAIN']['learning_rate']
-EARLY_STOPPING_PATIENCE = config['TRAIN']['early_stopping_patience']
-OPTIMIZER = config['TRAIN']['optimizer']
-SCHEDULER = config['TRAIN']['scheduler']
-MOMENTUM = config['TRAIN']['momentum']
-WEIGHT_DECAY = config['TRAIN']['weight_decay']
-LOSS_FN = config['TRAIN']['loss_function']
-METRIC_FN = config['TRAIN']['metric_function']
-
-# TRAIN SERIAL
-KST = timezone(timedelta(hours=9))
-TRAIN_TIMESTAMP = datetime.now(tz=KST).strftime("%Y%m%d%H%M%S")
-TRAIN_SERIAL = f'{MODEL}_{TRAIN_TIMESTAMP}' if DEBUG is not True else 'DEBUG'
-
-# PERFORMANCE RECORD
-PERFORMANCE_RECORD_DIR = os.path.join(
-    PROJECT_DIR, 'results', 'train', TRAIN_SERIAL)
-PERFORMANCE_RECORD_COLUMN_NAME_LIST = config['PERFORMANCE_RECORD']['column_list']
-
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--config_dir', default='./config/style_cls_config', help='your config dir')
+    args = parser.parse_args()
+    # CONFIG
+    PROJECT_DIR = "./"
+    ROOT_PROJECT_DIR = os.path.dirname(PROJECT_DIR)
+    config = load_yaml(args.config_dir)
+
+    # DEBUG
+    TRAIN_TYPE = config['TRAIN']['type']
+
+    # SEED
+    RANDOM_SEED = config['SEED']['random_seed']
+
+    # MODEL
+    MODEL = config['MODEL']['model_str']
+
+    # TRAIN
+    BATCH_SIZE = config['TRAIN']['batch_size']
+    EPOCHS = config['TRAIN']['num_epochs']
+    LEARNING_RATE = config['TRAIN']['learning_rate']
+    EARLY_STOPPING_PATIENCE = config['TRAIN']['early_stopping_patience']
+    OPTIMIZER = config['TRAIN']['optimizer']
+    SCHEDULER = config['TRAIN']['scheduler']
+    MOMENTUM = config['TRAIN']['momentum']
+    WEIGHT_DECAY = config['TRAIN']['weight_decay']
+    LOSS_FN = config['TRAIN']['loss_function']
+    METRIC_FN = config['TRAIN']['metric_function']
+
+    # TRAIN SERIAL
+    KST = timezone(timedelta(hours=9))
+    TRAIN_TIMESTAMP = datetime.now(tz=KST).strftime("%Y%m%d%H%M%S")
+    TRAIN_SERIAL = f'{MODEL}_{TRAIN_TIMESTAMP}' if DEBUG is not True else 'DEBUG'
+
+    # PERFORMANCE RECORD
+    PERFORMANCE_RECORD_DIR = os.path.join(
+        PROJECT_DIR, 'results', 'train', TRAIN_SERIAL)
+    PERFORMANCE_RECORD_COLUMN_NAME_LIST = config['PERFORMANCE_RECORD']['column_list']
+
     # Set random seed
     seed_everything(RANDOM_SEED)
 
@@ -69,7 +72,7 @@ if __name__ == '__main__':
     train_dataloader, validation_dataloader = get_datasets(config)
 
     # Load Model
-    model = get_model(MODEL).to(device)
+    model = get_model(MODEL, config).to(device)
 
     # Set optimizer, scheduler, loss function, metric function
     optimizer = optim.AdamW(model.parameters(), lr=LEARNING_RATE)
@@ -78,7 +81,7 @@ if __name__ == '__main__':
     metric_fn = accuracy_score
 
     # Set trainer
-    trainer = CustomTrainer(model, device, loss_fn, metric_fn,
+    trainer = CustomTrainer(TRAIN_TYPE, model, device, loss_fn, metric_fn,
                             optimizer, scheduler, logger=system_logger)
 
     # Set earlystopper
@@ -107,10 +110,6 @@ if __name__ == '__main__':
                                                model=model,
                                                optimizer=optimizer,
                                                scheduler=None)
-
-    # Save config yaml file
-    save_yaml(os.path.join(PERFORMANCE_RECORD_DIR,
-              'train_config_v1.yaml'), config)
 
     # Train
     for epoch in range(EPOCHS):
